@@ -21,12 +21,13 @@ public class MyAppUserService implements UserDetailsService{
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         
-        Optional<MyAppUser> user = repository.findByUsername(username);
+        Optional<MyAppUser> user = repository.findByUsername(username.toLowerCase(java.util.Locale.ROOT));
         if (user.isPresent()) {
             var userObj = user.get();
             return User.builder()
                     .username(userObj.getUsername())
                     .password(userObj.getPassword())
+                    .roles("USER")
                     .build();    
         }else{
             throw new UsernameNotFoundException(username);

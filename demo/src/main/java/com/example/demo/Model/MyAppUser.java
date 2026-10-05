@@ -1,6 +1,8 @@
 package com.example.demo.Model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Column;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -11,8 +13,11 @@ public class MyAppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Column(nullable=false, unique=true, length=30)
     private String username;
     private String email;
+    @JsonIgnore
+    @Column(nullable=false)
     private String password;
     public Long getId() {
         return id;
