@@ -21,16 +21,16 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
-    
+
     @Autowired
     private final MyAppUserService appUserService;
-    
-    
+
+
     @Bean
     public UserDetailsService userDetailsService(){
         return appUserService;
     }
-    
+
     @Bean
     public AuthenticationProvider authenticationProvider(){
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -38,28 +38,28 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
-    
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
-    
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         return httpSecurity
-            
+
             .formLogin(httpForm ->{
                 httpForm.loginPage("/req/login").loginProcessingUrl("/req/login").permitAll();
                 httpForm.defaultSuccessUrl("/index");
-                
+
             })
-    
-            
+
+
             .authorizeHttpRequests(registry ->{
                 registry.requestMatchers("/req/signup","/css/**","/js/**","/error").permitAll();
                 registry.anyRequest().authenticated();
             })
             .build();
     }
-    
+
 }
