@@ -2,7 +2,7 @@
 
 [![Verify](https://github.com/Sevyn1/account-access-lab/actions/workflows/verify.yml/badge.svg)](https://github.com/Sevyn1/account-access-lab/actions/workflows/verify.yml)
 
-A Java account system with a browser interface, validated registration and session-based authentication. Built as a focused engineering learning project with Codex assistance in October 2026.
+A Java account system with a browser interface, validated registration and session-based authentication. A focused engineering learning project developed in October 2026.
 
 **Java 17 · Spring Boot · Spring Security · JDBC · Flyway · H2 · JavaScript**
 
