@@ -1,3 +1,6 @@
+> **Superseded by [Account Access Lab](https://github.com/Sevyn1/account-access-lab).**
+> Registration workflows have been consolidated into the maintained account app, with email registration, profile editing, password changes and 34 integration tests. This private repository is retained as a source-history reference; it is no longer the active application.
+
 # Spring Registration Lab
 
 Java 17 / Spring Boot registration and session-based login demonstration. Includes Spring Security, BCrypt password hashing, Jakarta Validation, JPA, Thymeleaf and an isolated H2 database for local practice.
