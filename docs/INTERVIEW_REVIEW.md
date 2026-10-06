@@ -10,3 +10,8 @@ Explain this as an October 2026 learning project built with AI assistance. Revie
 - Show which tests exercise the real security filters and SQL store. Describe what remains untested.
 - Explain how AI output was reviewed: check API responses for secrets, add invalid-input cases, run the integration suite, and verify the browser flow.
 - Discuss what you would add before deployment: throttling, recovery, HTTPS, secure cookies, persistent storage, operations and abuse monitoring.
+
+- Explain the consolidation decision: one backend and schema, with email registration reimplemented and profile/password workflows added.
+- Trace a profile edit from authenticated principal through password confirmation to parameterized SQL.
+- Explain how V2 preserves V1 accounts and why stale password writes are rejected.
+- Explain the difference between changing a password, account recovery and revoking every existing session. Only the first is implemented.

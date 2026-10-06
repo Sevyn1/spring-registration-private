@@ -12,7 +12,9 @@ public class ApiErrors {
   @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class})
   ResponseEntity<Map<String, String>> invalid() {
     return ResponseEntity.badRequest()
-        .body(Map.of("message", "Check username, display name and password requirements."));
+        .body(
+            Map.of(
+                "message", "Check the required fields, email address and password requirements."));
   }
 
   @ExceptionHandler(ResponseStatusException.class)

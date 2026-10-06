@@ -35,7 +35,15 @@ class AccessFlowTest {
 
   String account(String username, String name, String password) throws Exception {
     return json.writeValueAsString(
-        Map.of("username", username, "displayName", name, "password", password));
+        Map.of(
+            "username",
+            username,
+            "displayName",
+            name,
+            "email",
+            "demo@example.test",
+            "password",
+            password));
   }
 
   ResultActions register(String username) throws Exception {
@@ -52,7 +60,8 @@ class AccessFlowTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.username").value("demo_member"))
         .andExpect(jsonPath("$.password").doesNotExist())
-        .andExpect(jsonPath("$.hash").doesNotExist());
+        .andExpect(jsonPath("$.hash").doesNotExist())
+        .andExpect(jsonPath("$.email").doesNotExist());
     var saved = store.find("demo_member").orElseThrow();
     assertTrue(encoder.matches(PASSWORD, saved.hash()));
     assertNotEquals(PASSWORD, saved.hash());

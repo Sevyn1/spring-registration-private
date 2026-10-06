@@ -1,8 +1,11 @@
 package io.github.sevyn1.access;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.security.Principal;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,9 +34,28 @@ public class AccountApi {
   }
 
   @GetMapping("/me")
-  public ResponseEntity<Accounts.PublicAccount> me(Principal principal) {
+  public ResponseEntity<Accounts.PrivateAccount> me(Principal principal) {
     return ResponseEntity.ok()
         .cacheControl(CacheControl.noStore())
         .body(accounts.profile(principal.getName()));
+  }
+
+  @PatchMapping("/me")
+  public ResponseEntity<Accounts.PrivateAccount> update(
+      Principal principal, @Valid @RequestBody Accounts.ProfileChange input) {
+    return ResponseEntity.ok()
+        .cacheControl(CacheControl.noStore())
+        .body(accounts.update(principal.getName(), input));
+  }
+
+  @PostMapping("/me/password")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void password(
+      Authentication authentication,
+      @Valid @RequestBody Accounts.PasswordChange input,
+      HttpServletRequest request,
+      jakarta.servlet.http.HttpServletResponse response) {
+    accounts.changePassword(authentication.getName(), input);
+    new SecurityContextLogoutHandler().logout(request, response, authentication);
   }
 }
