@@ -1,39 +1,91 @@
-> **Superseded by [Account Access Lab](https://github.com/Sevyn1/account-access-lab).**
-> Registration workflows have been consolidated into the maintained account app, with email registration, profile editing, password changes and 34 integration tests. This private repository is retained as a source-history reference; it is no longer the active application.
+# Spring Registration — Account Workspace
 
-# Spring Registration Lab
+[![Verify](https://github.com/Sevyn1/spring-registration-private/actions/workflows/verify.yml/badge.svg)](https://github.com/Sevyn1/spring-registration-private/actions/workflows/verify.yml)
 
-Java 17 / Spring Boot registration and session-based login demonstration. Includes Spring Security, BCrypt password hashing, Jakarta Validation, JPA, Thymeleaf and an isolated H2 database for local practice.
+A consolidated Java account application with registration, session-based sign-in, private profile editing and password changes. It brings the Spring Registration learning workflows into one maintained application with a redesigned browser interface. Developed and reviewed in October 2026.
 
-## Run locally
+**Java 17 · Spring Boot · Spring Security · JDBC · Flyway · H2 · JavaScript**
 
-From `demo/`, run `./mvnw spring-boot:run` with Java 17 installed. Open `http://127.0.0.1:8083/req/signup`. Create an account with fictional information, sign in and visit the protected dashboard. The default in-memory database is cleared when the application stops.
+![Account workspace](docs/preview.png)
 
-Run `./mvnw verify` to execute integration tests and package the application. Windows users can use `mvnw.cmd`.
+## Try it locally
 
-Optional PostgreSQL configuration: use the `postgres` Spring profile and supply `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` through the process environment. This profile validates an existing schema; no database migrations are provided, and this path has not been integration-tested against PostgreSQL.
+Requires Java 17. The Maven wrapper downloads Maven and dependencies on its first run.
 
-## Behavior and engineering decisions
+```sh
+./mvnw spring-boot:run
+```
 
-- Usernames contain 3–30 letters, numbers or underscores and are normalized to lowercase; a database constraint enforces uniqueness. Duplicate registration returns HTTP 409.
-- Email and password are validated before persistence. Passwords must contain 12–72 characters and fit within BCrypt’s 72-byte input limit.
-- Registration returns HTTP 201 with only the generated ID and username. Stored password hashes and email addresses are excluded from the response.
-- CSRF protection applies to registration, login and logout. Signup sends the rendered token with its JSON request; login/logout use Thymeleaf form tokens.
-- The browser prevents repeated submission, checks confirmation and reports success, validation, duplicate and connection failures.
-- `/index` requires authentication. Login errors use a generic message.
+Open **http://127.0.0.1:8084/**. Create an account with fictional details, sign in, edit your name and email with password confirmation, change your password, then sign in again and sign out. Windows users can use `mvnw.cmd`.
+
+The default local H2 database starts empty and is discarded when the process stops. To retain fictional accounts between restarts, run `java -jar target/account-access-lab-1.0.0.jar --spring.profiles.active=persistent`. This stores an H2 database in the gitignored `data/` folder; browser sessions still end on restart. The server binds to loopback; no hosted service or real user data is required.
+
+```sh
+./mvnw verify
+java -jar target/account-access-lab-1.0.0.jar
+```
+
+## What the project demonstrates
+
+- Validation at the API boundary: constrained usernames, display names, email addresses and password lengths.
+- A versioned SQL schema and parameterized queries, with the username primary key preventing duplicate registration even under concurrent requests.
+- BCrypt password storage; registration responses exclude email and password hashes; the authenticated profile includes only that account’s contact email.
+- Session authentication using Spring Security, with CSRF tokens for every state-changing request.
+- Protected profile read/edit endpoints and password-confirmed settings. Password updates end the current session; other existing sessions are not revoked. Old passwords fail subsequent sign-in.
+- Generic login failures and no-store responses for session tokens and profile data.
+- A second Flyway migration adds email without rewriting the original schema or deleting older accounts. Older accounts can add their email from Profile details.
+- A responsive JavaScript interface with confirmation checks, submission guards, session-token refresh and useful error feedback. Account fields are rendered with `textContent`.
+- Integration tests that exercise security filters, controllers, database migrations and SQL together.
+
+## Request flow
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant S as Spring Security
+    participant A as Account API
+    participant D as H2 database
+    B->>S: GET /api/csrf
+    S-->>B: Session cookie + CSRF token
+    B->>A: POST /api/accounts + token
+    A->>D: Insert validated account + BCrypt hash
+    A-->>B: 201 public account fields
+    B->>S: POST /api/session + token
+    S->>D: Load account and verify password
+    S-->>B: 204 authenticated session
+    B->>S: Refresh CSRF token
+    B->>A: GET /api/me
+    A-->>B: Protected profile
+```
+
+## API
+
+| Method | Route | Behavior |
+| --- | --- | --- |
+| GET | `/api/csrf` | Issue a session-bound CSRF token and its header name |
+| POST | `/api/accounts` | JSON: `username`, `displayName`, `email`, `password`; returns 201, 400 or 409 |
+| POST | `/api/session` | Form-encoded username/password; returns 204 or generic 401 |
+| GET | `/api/me` | Current account; returns 401 without authentication |
+| PATCH | `/api/me` | Update own `displayName` and `email`, confirming `currentPassword` |
+| POST | `/api/me/password` | Confirm `currentPassword`, set `newPassword`, end current session |
+| POST | `/api/session/logout` | Invalidate the session; returns 204 |
+
+POST and PATCH requests require the CSRF header and session cookie. Fetch a new token after login/logout. The browser implements this flow in [app.js](src/main/resources/static/app.js).
+
+Usernames use 3–24 letters, numbers or underscores and are normalized to lowercase. Passwords use 12–72 characters and must also fit within BCrypt's 72-byte UTF-8 limit.
+
+## Verification and design
+
+[Verification](docs/VERIFICATION.md) records tested behavior. [Design decisions](docs/DESIGN.md) explains the session, SQL and browser choices. [Interview review](docs/INTERVIEW_REVIEW.md) provides topics to study and discuss honestly.
 
 ## Scope
 
-A local learning and portfolio demonstration, not a deployed identity service. It does not implement email verification, account recovery, rate limiting, MFA, production database migrations or an operations/security review. No real user data or credentials belong in this repository.
+This is a local learning demo. It has no account recovery, email verification, MFA, login throttling, production database configuration, monitoring or production deployment. A deployed identity service would need these decisions plus HTTPS, secure cookies, secrets management and a dedicated security review. H2 tests do not establish PostgreSQL compatibility.
 
-## Provenance and authorship
+## Authorship, history and licensing
 
-Recovered from a local shared-project checkout whose original remote was `https://github.com/Alanlands1/springbootBackend.git`. Favour Ojo reports contributing to that project; this does not establish sole authorship of the recovered implementation. Original history, collaborator settings, IDE files and saved connection credentials were excluded.
+This older repository is now the home of the consolidated account application. Both repository histories were preserved in a merge commit. The earlier `demo/` implementation is available in historical commits; the maintained application is at the repository root. The newer Account Access Lab repository is superseded.
 
-The 2026 review added validation, safe response DTOs, uniqueness handling, CSRF protection, corrected form behavior, an isolated local configuration, refreshed dependencies, automated tests and replacement demo pages/styles. Those changes were implemented with Codex assistance and verified through the checks documented below.
+The current application was written from a registration/login specification and extended with email registration, profile editing and password changes. Favour Ojo reports contributing to the recovered shared project originally hosted at `Alanlands1/springbootBackend`; this does not establish sole authorship of its historical source. AI assistance was used for current implementation, testing and documentation.
 
-No license was found in the recovered files or through the upstream license endpoint. Keep this repository private until permission to redistribute the shared source is confirmed. A fresh commit history records recovery and maintenance now; it does not backdate work.
-
-## Verification
-
-See [review results](REVIEW.md). The integration suite covers registration, response privacy, BCrypt storage, duplicate usernames, invalid email/password/username, malformed JSON, CSRF enforcement, login success/failure, protected pages, rendered tokens and logout.
+The MIT license applies to the newly written current application. It does not relicense recovered shared source in historical commits. No redistribution license was found for that historical source, so this repository remains private. Maven wrapper notices and dependency licenses are retained; see [third-party notices](THIRD_PARTY_NOTICES.md).

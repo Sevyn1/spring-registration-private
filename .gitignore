@@ -1,7 +1,10 @@
 target/
+.DS_Store
 .idea/
 .vscode/
-.DS_Store
 .env
 .env.*
 *.log
+data/
+
+/data/
